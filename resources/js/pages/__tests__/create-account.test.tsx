@@ -2,19 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import CreateAccount from '../create-account';
 
-global.fetch = vi.fn();
+interface MockResponse {
+    ok: boolean;
+    status?: number;
+    json: () => Promise<unknown>;
+}
+
+global.fetch = vi.fn() as unknown as typeof fetch;
 
 describe('CreateAccount Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        delete (window as any).location;
-        (window as any).location = { href: '' };
+        window.location.href = '';
     });
 
     it('renders registration form', () => {
         render(<CreateAccount />);
         
-        expect(screen.getByText('Sign up with Email')).toBeInTheDocument(); 
+        expect(screen.getByText('Sign up with Email')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('First Name')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Surname')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
@@ -36,17 +41,15 @@ describe('CreateAccount Component', () => {
     });
 
     it('submits registration form', async () => {
-        // Mock successful registration
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: async () => ({ 
                 success: true,
                 token: 'test-token', 
                 user: { id: 1, first_name: 'John', surname: 'Doe' } 
             }),
-        });
+        } as MockResponse);
 
-        // Mock window.alert
         const alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
         render(<CreateAccount />);
@@ -79,7 +82,7 @@ describe('CreateAccount Component', () => {
     });
 
     it('displays validation errors', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: false,
             status: 422,
             json: async () => ({ 
@@ -87,7 +90,7 @@ describe('CreateAccount Component', () => {
                     email: ['The email has already been taken.']
                 }
             }),
-        });
+        } as MockResponse);
 
         render(<CreateAccount />);
         

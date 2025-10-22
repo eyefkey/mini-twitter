@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { expect, afterEach, vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import React from 'react';
 
@@ -8,16 +8,21 @@ afterEach(() => {
 });
 
 // Mock window.location
-delete (window as any).location;
-(window as any).location = { href: '', assign: vi.fn() };
+Object.defineProperty(window, 'location', {
+    value: {
+        href: '',
+        assign: vi.fn(),
+    },
+    writable: true,
+});
 
 // Mock Inertia Head component
 vi.mock('@inertiajs/react', async () => {
     const actual = await vi.importActual('@inertiajs/react');
     return {
         ...actual,
-        Head: ({ children }: any) => React.createElement('head', null, children),
-        Link: ({ children, href, ...props }: any) => React.createElement('a', { href, ...props }, children),
+        Head: ({ children }: { children?: React.ReactNode }) => React.createElement('head', null, children),
+        Link: ({ children, href, ...props }: { children?: React.ReactNode; href?: string }) => React.createElement('a', { href, ...props }, children),
         usePage: () => ({
             props: {},
             url: '/',

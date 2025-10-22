@@ -3,13 +3,17 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Welcome from '../welcome';
 
-global.fetch = vi.fn();
+interface MockResponse {
+    ok: boolean;
+    json: () => Promise<unknown>;
+}
+
+global.fetch = vi.fn() as unknown as typeof fetch;
 
 describe('Welcome (Login) Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        delete (window as any).location;
-        (window as any).location = { href: '' };
+        window.location.href = '';
     });
 
     it('renders login form', () => {
@@ -34,20 +38,20 @@ describe('Welcome (Login) Component', () => {
     });
 
     it('submits form with valid credentials', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: true,
             json: async () => ({ 
                 success: true,
                 token: 'test-token', 
                 user: { id: 1, email: 'test@example.com' } 
             }),
-        });
+        } as MockResponse);
 
         render(<Welcome />);
         
         const emailInput = screen.getByPlaceholderText('Email');
         const passwordInput = screen.getByPlaceholderText('Password');
-        const loginButton = screen.getByText('Log In'); // Changed to "Log In"
+        const loginButton = screen.getByText('Log In');
 
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -64,23 +68,22 @@ describe('Welcome (Login) Component', () => {
     });
 
     it('displays error message on failed login', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
             ok: false,
             json: async () => ({ message: 'Invalid credentials' }),
-        });
+        } as MockResponse);
 
         render(<Welcome />);
         
         const emailInput = screen.getByPlaceholderText('Email');
         const passwordInput = screen.getByPlaceholderText('Password');
-        const loginButton = screen.getByText('Log In'); // Changed to "Log In"
+        const loginButton = screen.getByText('Log In');
 
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
         fireEvent.click(loginButton);
 
         await waitFor(() => {
-            // The error shows in an alert, not on the page
             expect(global.fetch).toHaveBeenCalled();
         });
     });

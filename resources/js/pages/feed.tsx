@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface User {
     id: number;
@@ -23,21 +23,10 @@ export default function Feed() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [charCount, setCharCount] = useState(280);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
 
     const getToken = () => localStorage.getItem('auth_token');
 
-    useEffect(() => {
-        const token = getToken();
-        if (!token) {
-            window.location.href = '/';
-            return;
-        }
-        fetchPosts();
-    }, []);
-
-
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         try {
             const response = await fetch('/api/posts', {
                 headers: {
@@ -62,7 +51,16 @@ export default function Feed() {
         } catch (error) {
             console.error('Error fetching posts:', error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        const token = getToken();
+        if (!token) {
+            window.location.href = '/';
+            return;
+        }
+        fetchPosts();
+    }, [fetchPosts]);
 
     const handlePost = async (e: React.FormEvent) => {
         e.preventDefault();

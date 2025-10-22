@@ -2,23 +2,27 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Feed from '../feed';
 
-// Mock localStorage
+interface MockResponse {
+    ok: boolean;
+    json: () => Promise<unknown>;
+}
+
 const localStorageMock = {
     getItem: vi.fn(),
     setItem: vi.fn(),
     removeItem: vi.fn(),
     clear: vi.fn(),
+    length: 0,
+    key: () => null,
 };
-global.localStorage = localStorageMock as any;
+global.localStorage = localStorageMock as Storage;
 
-// Mock fetch
-global.fetch = vi.fn();
+global.fetch = vi.fn() as unknown as typeof fetch;
 
 describe('Feed Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        delete (window as any).location;
-        (window as any).location = { href: '' };
+        window.location.href = '';
     });
 
     it('redirects to login if no token exists', () => {
@@ -29,10 +33,10 @@ describe('Feed Component', () => {
 
     it('renders post creation form when authenticated', async () => {
         localStorageMock.getItem.mockReturnValue('test-token');
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
             json: async () => ({ success: true, posts: [] }),
-        });
+        } as MockResponse);
 
         render(<Feed />);
 
@@ -44,10 +48,10 @@ describe('Feed Component', () => {
 
     it('updates textarea content and shows character count', async () => {
         localStorageMock.getItem.mockReturnValue('test-token');
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
             json: async () => ({ success: true, posts: [] }),
-        });
+        } as MockResponse);
 
         render(<Feed />);
 
@@ -76,10 +80,10 @@ describe('Feed Component', () => {
             },
         ];
 
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
             json: async () => ({ success: true, posts: mockPosts }),
-        });
+        } as MockResponse);
 
         render(<Feed />);
 
@@ -91,10 +95,10 @@ describe('Feed Component', () => {
 
     it('fetches posts on mount', async () => {
         localStorageMock.getItem.mockReturnValue('test-token');
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
             json: async () => ({ success: true, posts: [] }),
-        });
+        } as MockResponse);
 
         render(<Feed />);
 
