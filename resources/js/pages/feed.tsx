@@ -198,13 +198,13 @@ export default function Feed() {
                         <div className='flex items-center gap-4'>
 
                             {/* Profile */}
-                            <a href="/profile" className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden cursor-pointer hover:ring-2 hover:ring-black transition">
+                            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden hover:ring-2 hover:ring-black transition">
                                 <img
                                     src={currentUser?.avatar || '/images/avatars/default-avatar.jpg'}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                 />
-                            </a>
+                            </div>
 
                             {/* Logout button */}
                             <button onClick={handleLogout} className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition cursor-pointer">
