@@ -6,7 +6,6 @@ interface User {
     full_name: string;
     first_name: string;
     surname: string;
-    avatar?: string;
 }
 
 interface Post {
@@ -34,27 +33,9 @@ export default function Feed() {
             window.location.href = '/';
             return;
         }
-        fetchProfile();
         fetchPosts();
     }, []);
 
-    const fetchProfile = async () => {
-        try {
-            const response = await fetch('/api/profile', {
-                headers: {
-                    'Authorization': `Bearer ${getToken()}`,
-                    'Accept': 'application/json',
-                },
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                setCurrentUser(data.user);
-            }
-        } catch (error) {
-            console.error('Error fetching profile:', error);
-        }
-    };
 
     const fetchPosts = async () => {
         try {
@@ -198,13 +179,7 @@ export default function Feed() {
                         <div className='flex items-center gap-4'>
 
                             {/* Profile */}
-                            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden hover:ring-2 hover:ring-black transition">
-                                <img
-                                    src={currentUser?.avatar || '/images/avatars/default-avatar.jpg'}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
+                            <div className="w-10 h-10 rounded-full bg-gray-400 dark:bg-gray-600 flex-shrink-0"></div>
 
                             {/* Logout button */}
                             <button onClick={handleLogout} className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition cursor-pointer">
@@ -231,13 +206,7 @@ export default function Feed() {
                         <form onSubmit={handlePost} className="flex gap-4">
 
                             {/* Profile Picture */}
-                            <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex-shrink-0">
-                                <img
-                                    src={currentUser?.avatar || '/images/avatars/default-avatar.jpg'}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
+                            <div className="w-12 h-12 rounded-full bg-gray-400 dark:bg-gray-600 flex-shrink-0"></div>
 
                             {/* Post Description */}
                             <div className="flex-1">
@@ -290,13 +259,7 @@ export default function Feed() {
                                     <div className="flex gap-4">
 
                                         {/* Profile Picture */}
-                                        <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex-shrink-0">
-                                            <img
-                                                src={post.user.avatar || '/images/avatars/default-avatar.jpg'}
-                                                alt="Profile"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
+                                        <div className="w-12 h-12 rounded-full bg-gray-400 dark:bg-gray-600 flex-shrink-0"></div>
 
                                         {/* Post Content */}
                                         <div className="flex-1">
