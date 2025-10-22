@@ -90,44 +90,64 @@ class PostController extends Controller
     public function toggleReaction(Request $request, $postId)
     {
         try {
-            $post = Post::findOrFail($postId);
-            $userId = $request->user()->id;
+            // Check if post exists
+            $post = Post::find($postId);
+            
+            if (!$post) {
+                Log::warning('Reaction attempt on non-existent post', ['post_id' => $postId]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Post not found'
+                ], 404);
+            }
 
-            $reaction = Reaction::where('user_id', $userId)
+            $user = $request->user();
+            
+            // Check if user already reacted
+            $reaction = Reaction::where('user_id', $user->id)
                 ->where('post_id', $postId)
                 ->first();
 
             if ($reaction) {
-                // Unlike
+                // Unlike - remove reaction
                 $reaction->delete();
-                $message = 'Reaction removed';
-                $isReacted = false;
+                
+                Log::info('Reaction removed', [
+                    'user_id' => $user->id,
+                    'post_id' => $postId
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reaction removed',
+                    'reactions_count' => $post->reactions()->count(),
+                    'is_reacted' => false
+                ], 200);
             } else {
-                // Like
+                // Like - add reaction
                 Reaction::create([
-                    'user_id' => $userId,
+                    'user_id' => $user->id,
                     'post_id' => $postId,
                 ]);
-                $message = 'Reaction added';
-                $isReacted = true;
+                
+                Log::info('Reaction added', [
+                    'user_id' => $user->id,
+                    'post_id' => $postId
+                ]);
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reaction added',
+                    'reactions_count' => $post->reactions()->count(),
+                    'is_reacted' => true
+                ], 200);
             }
-
-            $reactionsCount = $post->reactions()->count();
-
-            Log::info('Reaction toggled', [
-                'post_id' => $postId,
-                'user_id' => $userId,
-                'action' => $isReacted ? 'liked' : 'unliked'
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'is_reacted' => $isReacted,
-                'reactions_count' => $reactionsCount
-            ], 200);
         } catch (\Exception $e) {
-            Log::error('Failed to toggle reaction', ['error' => $e->getMessage()]);
+            Log::error('Reaction toggle failed', [
+                'error' => $e->getMessage(),
+                'post_id' => $postId
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to toggle reaction'

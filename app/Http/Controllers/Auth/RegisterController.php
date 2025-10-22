@@ -39,12 +39,15 @@ class RegisterController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             Log::info('User created successfully', ['user_id' => $user->id]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Registration successful',
-                'user' => $user
+                'user' => $user,
+                'token' => $token
             ], 201);
         } catch (\Exception $e) {
             Log::error('User creation failed', ['error' => $e->getMessage()]);
