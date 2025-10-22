@@ -24,4 +24,12 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+        headers: {
+            'Content-Security-Policy': "script-src 'self' 'unsafe-eval' 'unsafe-inline';",
+        },
+    },
 });
